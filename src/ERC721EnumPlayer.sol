@@ -14,32 +14,29 @@ contract ERC721EnumPlayer is ERC721Enumerable {
         _tokenId._value = 20;
     }
 
+    function mint() external {
+        _safeMint(msg.sender, _tokenId._value);
+        _tokenId.decrement();
+    }
+
+    function getTokenId() external returns (uint256) {
+        return _tokenId._value;
+    }
+
     function getSpecialItems() external returns (uint256 total) {
-        uint256 indexLength = balanceOf(msg.sender) + 1;
-        for (uint256 i = 0; i < indexLength; i++) {
+        uint256 lastIndex = balanceOf(msg.sender);
+        for (uint256 i = 0; i < lastIndex; i++) {
             uint256 token = tokenOfOwnerByIndex(msg.sender, i);
-            if (_simpleIsPrime(token)) {
+            if (_isPrime(token)) {
                 total++;
             }
         }
         return total;
     }
 
-    function _simpleIsPrime(uint256 x) internal returns (bool) {
+    function _isPrime(uint256 x) internal pure returns (bool) {
         if (x == 1) return false;
         if (x < 3) return true;
-        for (uint256 i = 2; i < x; i++) {
-            if (x % i == 0) return false;
-        }
-        return true;
-    }
-}
-
-// forge t --gas-report
-
-contract TestThis {
-    function _simpleIsPrime(uint256 x) internal returns (bool) {
-        if (x < 3) return 2;
         for (uint256 i = 2; i < x; i++) {
             if (x % i == 0) return false;
         }

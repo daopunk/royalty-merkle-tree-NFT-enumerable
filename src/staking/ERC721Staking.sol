@@ -15,7 +15,7 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
     Counters.Counter private _tokenId;
     BitMaps.BitMap private _bitmap;
 
-    uint256 public constant PRICE = 0.005 ether;
+    uint256 public constant PRICE = 10 ether;
     bytes32 private immutable _merkleRoot;
 
     constructor(bytes32 merkleroot) ERC721("Trio", "TRIO") {
@@ -31,7 +31,7 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
 
     // TODO: where is merkleProof coming from? computed off-chain on frontend or backend - there are JS libs
     function privateMint(bytes32[] calldata merkleProof, uint256 ticket) external payable {
-        require(msg.value == PRICE / 4, "ERC721Staking: Incorrect private price");
+        require(msg.value == PRICE / 5, "ERC721Staking: Incorrect private price");
         _validateMerkleTree(merkleProof, ticket);
         _pMint(msg.sender);
     }
