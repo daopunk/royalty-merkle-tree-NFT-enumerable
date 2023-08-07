@@ -29,7 +29,7 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
         _pMint(msg.sender);
     }
 
-    // TODO: where is merkleProof coming from?
+    // TODO: where is merkleProof coming from? computed off-chain on frontend or backend - there are JS libs
     function privateMint(bytes32[] calldata merkleProof, uint256 ticket) external payable {
         require(msg.value == PRICE / 4, "ERC721Staking: Incorrect private price");
         _validateMerkleTree(merkleProof, ticket);
@@ -54,7 +54,7 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
         _tokenId.decrement();
     }
 
-    // TODO: how does this prevent hacker from submitting random tickets?
+    // TODO: how does this prevent hacker from submitting random tickets? need signature + ticket
     function _validateMerkleTree(bytes32[] calldata merkleProof, uint256 ticket) internal {
         // user allowed only 1 mint at discount
         require(!_bitmap.get(ticket), "ERC721Staking: Ticket already used");
