@@ -38,4 +38,6 @@ contract StakingTrio is TestHelper {
         assertEq(erc721Staking.balanceOf(alice), 1);
         vm.stopPrank();
     }
+
+    function testStakingAndReward() public {}
 }
