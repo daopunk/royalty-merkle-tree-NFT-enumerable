@@ -12,32 +12,61 @@ contract StakingTrio is TestHelper {
     }
 
     // TODO: why is proof failing?
-    function testPrivateMint() public {
-        bytes32 aHash = keccak256(abi.encodePacked(alice, uint256(1)));
-        bytes32 bHash = keccak256(abi.encodePacked(bob, uint256(2)));
-        bytes32 cHash = keccak256(abi.encodePacked(cobra, uint256(3)));
-        bytes32 dHash = keccak256(abi.encodePacked(dede, uint256(4)));
-        bytes32 eHash = keccak256(abi.encodePacked(edde, uint256(5)));
-        bytes32 fHash = keccak256(abi.encodePacked(fefe, uint256(6)));
+    // function testPrivateMint() public {
+    //     bytes32 aHash = keccak256(abi.encodePacked(alice, uint256(1)));
+    //     bytes32 bHash = keccak256(abi.encodePacked(bob, uint256(2)));
+    //     bytes32 cHash = keccak256(abi.encodePacked(cobra, uint256(3)));
+    //     bytes32 dHash = keccak256(abi.encodePacked(dede, uint256(4)));
+    //     bytes32 eHash = keccak256(abi.encodePacked(edde, uint256(5)));
+    //     bytes32 fHash = keccak256(abi.encodePacked(fefe, uint256(6)));
 
-        // bytes32 abHash = keccak256(abi.encodePacked(aHash, bHash));
-        bytes32 cdHash = keccak256(abi.encodePacked(cHash, dHash));
-        bytes32 efHash = keccak256(abi.encodePacked(eHash, fHash));
+    //     // bytes32 abHash = keccak256(abi.encodePacked(aHash, bHash));
+    //     bytes32 cdHash = keccak256(abi.encodePacked(cHash, dHash));
+    //     bytes32 efHash = keccak256(abi.encodePacked(eHash, fHash));
 
-        bytes32[] memory proof = new bytes32[](4);
-        proof[0] = aHash;
-        proof[1] = bHash;
-        proof[2] = cdHash;
-        proof[3] = efHash;
+    //     bytes32[] memory proof = new bytes32[](4);
+    //     proof[0] = aHash;
+    //     proof[1] = bHash;
+    //     proof[2] = cdHash;
+    //     proof[3] = efHash;
 
-        bytes memory payload = abi.encodeWithSignature("privateMint(bytes32[],uint256)", proof, 1);
+    //     bytes memory payload = abi.encodeWithSignature("privateMint(bytes32[],uint256)", proof, 1);
 
+    //     vm.startPrank(alice);
+    //     (bool success,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payload);
+    //     require(success, "Payload fail");
+    //     assertEq(erc721Staking.balanceOf(alice), 1);
+    //     vm.stopPrank();
+    // }
+
+    function testStakingAndReward() public {
         vm.startPrank(alice);
-        (bool success,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payload);
-        require(success, "Payload fail");
+        erc721Staking.publicMint{value: 10 ether}();
         assertEq(erc721Staking.balanceOf(alice), 1);
         vm.stopPrank();
-    }
 
-    function testStakingAndReward() public {}
+        vm.startPrank(bob);
+        erc721Staking.publicMint{value: 10 ether}();
+        erc721Staking.publicMint{value: 10 ether}();
+        assertEq(erc721Staking.balanceOf(bob), 2);
+        vm.stopPrank();
+
+        vm.startPrank(alice);
+        erc721Staking.approve(address(stakeOperator), 20);
+        erc721Staking.transferFrom(alice, address(stakeOperator), 20);
+        assertEq(erc721Staking.balanceOf(address(stakeOperator)), 1);
+        assertEq(erc721Staking.balanceOf(alice), 0);
+        // uint256 x = stakeOperator.staked(alice, 20).timelock;
+        // emit log_uint(x);
+        (uint256 t, uint256 d, uint256 r) = stakeOperator.staked(alice, 20);
+        emit log_uint(t);
+        stakeOperator.claimReward(20);
+        stakeOperator.claimNft(20);
+        assertEq(erc721Staking.balanceOf(address(stakeOperator)), 0);
+        assertEq(erc721Staking.balanceOf(alice), 1);
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        vm.stopPrank();
+    }
 }

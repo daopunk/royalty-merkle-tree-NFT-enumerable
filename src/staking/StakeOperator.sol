@@ -21,6 +21,8 @@ contract StakeOperator is IERC721Receiver, Ownable2Step {
 
     mapping(address owner => mapping(uint256 tokenId => Claim)) public staked;
 
+    event RecieveNFT(address operator, address from, uint256 tokenId);
+
     constructor(address _nftStaking) {
         nftStaking = IERC721(_nftStaking);
     }
@@ -31,7 +33,7 @@ contract StakeOperator is IERC721Receiver, Ownable2Step {
 
     function claimReward(uint256 tokenId) external {
         Claim memory claim = staked[msg.sender][tokenId];
-        require(claim.dailyClaim == 1, "StakeOperator: Already claimed");
+        require(claim.dailyClaim > 0, "StakeOperator: Already claimed");
         require(claim.timeLock < block.timestamp, "StakeOperator: Claim not eligible yet");
 
         // TODO: can use `claim` variable or will that not write to storage?
@@ -46,12 +48,22 @@ contract StakeOperator is IERC721Receiver, Ownable2Step {
         nftStaking.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
+    // TODO: this does not work
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)
         external
         returns (bytes4)
     {
-        require(msg.sender == address(nftStaking), "StakeOperator: Wrong staking asset");
-        staked[from][tokenId] = Claim(block.timestamp + 1 days, 1, 1);
+        // require(msg.sender == address(nftStaking), "StakeOperator: Wrong staking asset");
+        require(msg.sender == address(999), "StakeOperator: Wrong staking asset");
+
+        // staked[from][tokenId] = Claim(block.timestamp + 1 days, 1, 1);
+        // staked[from][tokenId].timelock = block.timestamp + 1 days;
+        // staked[from][tokenId].dailyClaim = 1;
+        // staked[from][tokenId].retrieval = 1;
+        emit RecieveNFT(operator, from, tokenId);
+
+        Claim memory c = Claim(block.timestamp + 1 days, uint256(1), 1);
+        staked[from][tokenId] = c;
 
         return IERC721Receiver.onERC721Received.selector;
     }
