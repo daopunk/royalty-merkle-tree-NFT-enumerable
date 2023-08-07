@@ -61,7 +61,7 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
 
         // if valid Merkle proof, user can mint
         require(
-            MerkleProof.verify(merkleProof, _merkleRoot, keccak256(abi.encodePacked(msg.sender))),
+            MerkleProof.verify(merkleProof, _merkleRoot, keccak256(abi.encodePacked(msg.sender, ticket))),
             "ERC721Staking: Invalid proof"
         );
 
