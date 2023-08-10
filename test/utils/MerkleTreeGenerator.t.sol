@@ -1,124 +1,80 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity 0.8.19;
 
-import "forge-std/Test.sol";
+/**
+ * Test helper contract to generate Merkle trees and proofs.
+ */
+contract MerkleTreeGenerator {
+    function generateMerkleTree(bytes32[] memory leaves) public pure returns (bytes32[] memory) {
+        require(leaves.length > 0, "Expected non-zero number of leaves");
 
-contract MerkleTreeGenerator is Test {
-    bytes32[] public nodes;
+        bytes32[] memory tree = new bytes32[](2 * leaves.length - 1);
 
-    function generate6(address[6] memory airdropList, uint256[6] memory tickets) public returns (bytes32) {
-        uint256 l = airdropList.length;
-        require(l == tickets.length, "MerkleTreeGenerator: Lengths are different");
-
-        // hash leaves
-        for (uint256 i = 0; i < l; i++) {
-            bytes32 hashed = keccak256(abi.encodePacked(airdropList[i], tickets[i]));
-            nodes.push(hashed);
-        }
-        uint256 offset = 0;
-
-        while (l > 0) {
-            if (l % 2 != 0) {
-                uint256 ll = l - 1;
-                uint256 i = 0;
-                while (i < ll) {
-                    bytes32 hashed = keccak256(abi.encodePacked(nodes[offset + i], nodes[offset + i + 1]));
-
-                    nodes.push(hashed);
-                    i += 2;
-                }
-                nodes.push(nodes[offset + i + 1]);
-            } else {
-                for (uint256 i = 0; i < l; i += 2) {
-                    bytes32 hashed = keccak256(abi.encodePacked(nodes[offset + i], nodes[offset + i + 1]));
-
-                    nodes.push(hashed);
-                }
-            }
-            offset += l;
-            l = l / 2;
+        for (uint256 i = 0; i < leaves.length; i++) {
+            tree[tree.length - 1 - i] = leaves[i];
         }
 
-        uint256 nodesLength = nodes.length;
-
-        if (nodesLength % 2 == 0) {
-            uint256 x = nodesLength - 3;
-            uint256 y = nodesLength - 4;
-
-            return keccak256(abi.encodePacked(nodes[x], nodes[y]));
+        for (int256 i = int256(tree.length - 1 - leaves.length); i >= 0; i--) {
+            tree[uint256(i)] = hashPair(tree[leftChildIndex(uint256(i))], tree[rightChildIndex(uint256(i))]);
         }
 
-        return nodes[nodesLength - 1];
+        return tree;
     }
 
-    // function generate5(address[5] memory airdropList, uint256[5] memory tickets) public returns (bytes32) {
-    //     uint256 l = airdropList.length;
-    //     require(l == tickets.length, "MerkleTreeGenerator: Lengths are different");
+    function hashPair(bytes32 left, bytes32 right) internal pure returns (bytes32) {
+        return left < right ? keccak256(bytes.concat(left, right)) : keccak256(bytes.concat(right, left));
+    }
 
-    //     // hash leaves
-    //     for (uint256 i = 0; i < l; i++) {
-    //         bytes32 hashed = keccak256(abi.encodePacked(airdropList[i], tickets[i]));
-    //         nodes.push(hashed);
-    //     }
-    //     uint256 offset = 0;
+    function leftChildIndex(uint256 i) internal pure returns (uint256) {
+        return 2 * i + 1;
+    }
 
-    //     while (l > 0) {
-    //         if (l % 2 != 0) {
-    //             uint256 ll = l - 1;
-    //             uint256 i = 0;
-    //             while (i < ll) {
-    //                 bytes32 hashed = keccak256(abi.encodePacked(nodes[offset + i], nodes[offset + i + 1]));
+    function rightChildIndex(uint256 i) internal pure returns (uint256) {
+        return 2 * i + 2;
+    }
 
-    //                 nodes.push(hashed);
-    //                 i += 2;
-    //             }
-    //             nodes.push(nodes[offset + i + 1]);
-    //         } else {
-    //             for (uint256 i = 0; i < l; i += 2) {
-    //                 bytes32 hashed = keccak256(abi.encodePacked(nodes[offset + i], nodes[offset + i + 1]));
+    function getProof(bytes32[] memory tree, uint256 index) public pure returns (bytes32[] memory) {
+        checkLeafNode(tree, index);
 
-    //                 nodes.push(hashed);
-    //             }
-    //         }
-    //         offset += l;
-    //         l = l / 2;
-    //     }
-
-    //     uint256 nodesLength = nodes.length;
-
-    //     if (nodesLength % 2 == 0) {
-    //         uint256 x = nodesLength - 3;
-    //         uint256 y = nodesLength - 4;
-
-    //         return keccak256(abi.encodePacked(nodes[x], nodes[y]));
-    //     }
-
-    //     return nodes[nodesLength - 1];
-    // }
-
-    function generate4(address[4] memory airdropList, uint256[4] memory tickets) public returns (bytes32) {
-        uint256 l = airdropList.length;
-        require(l == tickets.length, "MerkleTreeGenerator: Lengths are different");
-
-        // hash leaves
-        for (uint256 i = 0; i < l; i++) {
-            bytes32 hashed = keccak256(abi.encodePacked(airdropList[i], tickets[i]));
-            nodes.push(hashed);
+        bytes32[] memory proof;
+        while (index > 0) {
+            proof = concatenate(proof, tree[siblingIndex(index)]);
+            index = parentIndex(index);
         }
-        uint256 offset = 0;
+        return proof;
+    }
 
-        while (l > 0) {
-            for (uint256 i = 0; i < l; i += 2) {
-                bytes32 hashed = keccak256(abi.encodePacked(nodes[offset + i], nodes[offset + i + 1]));
+    function checkLeafNode(bytes32[] memory tree, uint256 index) internal pure {
+        require(index < tree.length, "Invalid leaf index");
+    }
 
-                nodes.push(hashed);
+    function siblingIndex(uint256 index) internal pure returns (uint256) {
+        if (index % 2 == 0) {
+            return index - 1;
+        } else {
+            return index + 1;
+        }
+    }
+
+    function parentIndex(uint256 index) internal pure returns (uint256) {
+        return (index - 1) / 2;
+    }
+
+    function concatenate(bytes32[] memory a, bytes32 b) internal pure returns (bytes32[] memory) {
+        bytes32[] memory concatenated = new bytes32[](a.length + 1);
+        for (uint256 i = 0; i < a.length; i++) {
+            concatenated[i] = a[i];
+        }
+        concatenated[a.length] = b;
+        return concatenated;
+    }
+
+    function getIndex(bytes32[] memory tree, bytes32 leaf) public pure returns (uint256) {
+        for (uint256 i = 0; i < tree.length; i++) {
+            if (tree[i] == leaf) {
+                return i;
             }
-            offset += l;
-            l = l / 2;
         }
-
-        uint256 nodesLength = nodes.length;
-
-        return nodes[nodesLength - 1];
+        revert("Leaf not found");
     }
 }
