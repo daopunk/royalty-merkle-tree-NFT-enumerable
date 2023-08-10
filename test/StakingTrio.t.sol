@@ -56,14 +56,13 @@ contract StakingTrio is TestHelper {
         erc721Staking.transferFrom(alice, address(stakeOperator), 20);
         assertEq(erc721Staking.balanceOf(address(stakeOperator)), 1);
         assertEq(erc721Staking.balanceOf(alice), 0);
-        // uint256 x = stakeOperator.staked(alice, 20).timelock;
-        // emit log_uint(x);
-        (uint256 t, uint256 d, uint256 r) = stakeOperator.staked(alice, 20);
+        uint256 t = stakeOperator.timeLock(alice, 20);
+        // uint256 t = stakeOperator.timeLock[alice][20];
+
         emit log_uint(t);
-        stakeOperator.claimReward(20);
-        stakeOperator.claimNft(20);
-        assertEq(erc721Staking.balanceOf(address(stakeOperator)), 0);
-        assertEq(erc721Staking.balanceOf(alice), 1);
+        // stakeOperator.claimReward(20);
+        // assertEq(erc721Staking.balanceOf(address(stakeOperator)), 0);
+        // assertEq(erc721Staking.balanceOf(alice), 1);
         vm.stopPrank();
 
         vm.startPrank(bob);

@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import {ERC20} from "@openzeppelin/token/ERC20/ERC20.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
+// version
+
 contract ERC20Reward is ERC20, Ownable2Step {
     event Mint(address account, uint256 amount);
 

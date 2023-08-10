@@ -25,10 +25,13 @@ contract ERC721EnumPlayer is ERC721Enumerable {
 
     function getSpecialItems() external returns (uint256 total) {
         uint256 lastIndex = balanceOf(msg.sender);
-        for (uint256 i = 0; i < lastIndex; i++) {
-            uint256 token = tokenOfOwnerByIndex(msg.sender, i);
-            if (_isPrime(token)) {
-                total++;
+        for (uint256 i = 0; i < lastIndex;) {
+            unchecked {
+                uint256 token = tokenOfOwnerByIndex(msg.sender, i);
+                if (_isPrime(token)) {
+                    total++;
+                }
+                ++i;
             }
         }
         return total;
@@ -37,8 +40,11 @@ contract ERC721EnumPlayer is ERC721Enumerable {
     function _isPrime(uint256 x) internal pure returns (bool) {
         if (x == 1) return false;
         if (x < 3) return true;
-        for (uint256 i = 2; i < x; i++) {
-            if (x % i == 0) return false;
+        for (uint256 i = 2; i < x;) {
+            unchecked {
+                if (x % i == 0) return false;
+                ++i;
+            }
         }
         return true;
     }
