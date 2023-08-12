@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "forge-std/Test.sol";
 import {ERC20Reward} from "src/staking/ERC20Reward.sol";
 import {ERC721Staking} from "src/staking/ERC721Staking.sol";
 import {StakeOperator} from "src/staking/StakeOperator.sol";
@@ -9,7 +10,7 @@ import {MerkleTreeGenerator} from "test/utils/MerkleTreeGenerator.t.sol";
 
 // forge t --gas-report
 
-contract TestHelper is MerkleTreeGenerator {
+contract TestHelper is Test, MerkleTreeGenerator {
     ERC20Reward public erc20Reward;
     ERC721Staking public erc721Staking;
     StakeOperator public stakeOperator;
