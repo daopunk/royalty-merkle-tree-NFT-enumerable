@@ -40,7 +40,7 @@ contract ERC721EnumPlayer is ERC721Enumerable {
     function _isPrime(uint256 x) internal pure returns (bool) {
         if (x == 1) return false;
         if (x < 3) return true;
-        for (uint256 i = 2; i < x;) {
+        for (uint256 i = 2; i < x / 2 + 1;) {
             unchecked {
                 if (x % i == 0) return false;
                 ++i;

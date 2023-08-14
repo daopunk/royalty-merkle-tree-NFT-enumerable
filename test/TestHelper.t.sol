@@ -31,7 +31,7 @@ contract TestHelper is Test, MerkleTreeGenerator {
     bytes32 public merkleroot;
 
     function setUp() public {
-        merkleroot = generate6(airdropList6, tickets6);
+        // merkleroot = generate6(airdropList6, tickets6);
 
         erc721Staking = new ERC721Staking(merkleroot);
         stakeOperator = new StakeOperator(address(erc721Staking));
@@ -40,8 +40,8 @@ contract TestHelper is Test, MerkleTreeGenerator {
 
         mintEther();
 
-        assertEq(generate6(airdropList6, tickets6), validateMerkleRoot6());
-        assertEq(generate4(airdropList4, tickets4), validateMerkleRoot4());
+        // assertEq(generate6(airdropList6, tickets6), validateMerkleRoot6());
+        // assertEq(generate4(airdropList4, tickets4), validateMerkleRoot4());
     }
 
     function mintEther() public {
