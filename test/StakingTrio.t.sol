@@ -19,6 +19,10 @@ contract StakingTrio is TestHelper {
         vm.startPrank(alice);
         (bool successAlice,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payloadAlice);
         require(successAlice, "Payload fail");
+
+        (bool successAliceDoubleMint,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payloadAlice);
+        require(!successAliceDoubleMint, "Payload success");
+
         assertEq(erc721Staking.balanceOf(alice), 1);
         vm.stopPrank();
 

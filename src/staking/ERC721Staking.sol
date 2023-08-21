@@ -19,16 +19,13 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
     bytes32 private immutable _merkleRoot;
 
     constructor(bytes32 merkleroot) payable ERC721("Trio", "TRIO") {
-        _setDefaultRoyalty(address(this), 250); // magic num
+        _setDefaultRoyalty(address(this), 250);
         _merkleRoot = merkleroot;
         _tokenId._value = 20;
     }
 
-    // error Wrong()
-    // revert Wrong(); // bytes4(keccek256("Wrong"))
-
     function publicMint() external payable {
-        require(msg.value == PRICE, "Incorrect price"); // make sure less than 32 bytes
+        require(msg.value == PRICE, "Incorrect price");
         _pMint(msg.sender);
     }
 
@@ -56,7 +53,6 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
         _tokenId.decrement();
     }
 
-    // using MerkletTree for bytes32 = bytes32.verify
     function _validateMerkleTree(bytes32[] calldata merkleProof, uint256 ticket) internal {
         // user allowed only 1 mint at discount
         require(!_bitmap.get(ticket), "Ticket already used");
