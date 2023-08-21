@@ -28,21 +28,21 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
     // revert Wrong(); // bytes4(keccek256("Wrong"))
 
     function publicMint() external payable {
-        require(msg.value == PRICE, "ERC721Staking: Incorrect price"); // make sure less than 32 bytes
+        require(msg.value == PRICE, "Incorrect price"); // make sure less than 32 bytes
         _pMint(msg.sender);
     }
 
     function privateMint(bytes32[] calldata merkleProof, uint256 ticket) external payable {
-        require(msg.value == PRICE / 5, "ERC721Staking: Incorrect price");
+        require(msg.value == PRICE / 5, "Incorrect price");
         _validateMerkleTree(merkleProof, ticket);
         _pMint(msg.sender);
     }
 
     function withdraw() external onlyOwner {
         uint256 payout = address(this).balance;
-        require(payout > 0, "ERC721Staking: No funds available");
+        require(payout > 0, "No funds available");
         (bool success,) = msg.sender.call{value: payout}("");
-        require(success, "ERC721Staking: Withdraw error");
+        require(success, "Withdraw error");
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
@@ -51,21 +51,20 @@ contract ERC721Staking is ERC721, ERC2981, Ownable2Step {
 
     function _pMint(address owner) internal {
         uint256 tokenId = _tokenId.current();
-        require(tokenId > 0, "ERC721Staking: Mint empty");
+        require(tokenId > 0, "Mint empty");
         _safeMint(owner, tokenId);
         _tokenId.decrement();
     }
 
     // using MerkletTree for bytes32 = bytes32.verify
-
     function _validateMerkleTree(bytes32[] calldata merkleProof, uint256 ticket) internal {
         // user allowed only 1 mint at discount
-        require(!_bitmap.get(ticket), "ERC721Staking: Ticket already used");
+        require(!_bitmap.get(ticket), "Ticket already used");
 
         // if valid Merkle proof, user can mint
         require(
             MerkleProof.verify(merkleProof, _merkleRoot, keccak256(abi.encodePacked(msg.sender, ticket))),
-            "ERC721Staking: Invalid proof"
+            "Invalid proof"
         );
 
         // mark user discount mint as expired

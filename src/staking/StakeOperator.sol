@@ -39,10 +39,8 @@ contract StakeOperator is IERC721Receiver, Ownable2Step {
         nftStaking.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
-    // TODO: fix this
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)
         external
-        override
         returns (bytes4)
     {
         require(msg.sender == address(nftStaking), "StakeOperator: Wrong staking asset");

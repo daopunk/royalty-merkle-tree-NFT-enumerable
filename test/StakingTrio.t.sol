@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {TestHelper} from "test/TestHelper.t.sol";
+import {MerkleTreeGenerator} from "test/utils/MerkleTreeGenerator.sol";
 
 contract StakingTrio is TestHelper {
     function testPublicMint() public {
@@ -11,35 +12,28 @@ contract StakingTrio is TestHelper {
         vm.stopPrank();
     }
 
-    // TODO: why is proof failing?
-    // function testPrivateMint() public {
-    //     bytes32 aHash = keccak256(abi.encodePacked(alice, uint256(1)));
-    //     bytes32 bHash = keccak256(abi.encodePacked(bob, uint256(2)));
-    //     bytes32 cHash = keccak256(abi.encodePacked(cobra, uint256(3)));
-    //     bytes32 dHash = keccak256(abi.encodePacked(dede, uint256(4)));
-    //     bytes32 eHash = keccak256(abi.encodePacked(edde, uint256(5)));
-    //     bytes32 fHash = keccak256(abi.encodePacked(fefe, uint256(6)));
+    function testPrivateMint() public {
+        bytes32[] memory proofAlice = getProof(10);
+        bytes memory payloadAlice = abi.encodeWithSignature("privateMint(bytes32[],uint256)", proofAlice, 1);
 
-    //     // bytes32 abHash = keccak256(abi.encodePacked(aHash, bHash));
-    //     bytes32 cdHash = keccak256(abi.encodePacked(cHash, dHash));
-    //     bytes32 efHash = keccak256(abi.encodePacked(eHash, fHash));
+        vm.startPrank(alice);
+        (bool successAlice,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payloadAlice);
+        require(successAlice, "Payload fail");
+        assertEq(erc721Staking.balanceOf(alice), 1);
+        vm.stopPrank();
 
-    //     bytes32[] memory proof = new bytes32[](4);
-    //     proof[0] = aHash;
-    //     proof[1] = bHash;
-    //     proof[2] = cdHash;
-    //     proof[3] = efHash;
+        bytes32[] memory proofDede = getProof(7);
+        bytes memory payloadDede = abi.encodeWithSignature("privateMint(bytes32[],uint256)", proofDede, 4);
 
-    //     bytes memory payload = abi.encodeWithSignature("privateMint(bytes32[],uint256)", proof, 1);
-
-    //     vm.startPrank(alice);
-    //     (bool success,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payload);
-    //     require(success, "Payload fail");
-    //     assertEq(erc721Staking.balanceOf(alice), 1);
-    //     vm.stopPrank();
-    // }
+        vm.startPrank(dede);
+        (bool successDede,) = address(erc721Staking).call{value: 2 ether, gas: 1000000}(payloadDede);
+        require(successDede, "Payload fail");
+        assertEq(erc721Staking.balanceOf(dede), 1);
+        vm.stopPrank();
+    }
 
     function testStakingAndReward() public {
+        uint256 startTime = block.timestamp;
         vm.startPrank(alice);
         erc721Staking.publicMint{value: 10 ether}();
         assertEq(erc721Staking.balanceOf(alice), 1);
@@ -53,16 +47,20 @@ contract StakingTrio is TestHelper {
 
         vm.startPrank(alice);
         erc721Staking.approve(address(stakeOperator), 20);
-        erc721Staking.transferFrom(alice, address(stakeOperator), 20);
+        erc721Staking.safeTransferFrom(alice, address(stakeOperator), 20);
         assertEq(erc721Staking.balanceOf(address(stakeOperator)), 1);
         assertEq(erc721Staking.balanceOf(alice), 0);
-        uint256 t = stakeOperator.timeLock(alice, 20);
-        // uint256 t = stakeOperator.timeLock[alice][20];
 
-        emit log_uint(t);
-        // stakeOperator.claimReward(20);
-        // assertEq(erc721Staking.balanceOf(address(stakeOperator)), 0);
-        // assertEq(erc721Staking.balanceOf(alice), 1);
+        vm.expectRevert("StakeOperator: Claim not eligible yet");
+        stakeOperator.claimReward(20);
+
+        vm.warp(startTime + 1 days + 1 minutes);
+        stakeOperator.claimReward(20);
+
+        assertEq(erc721Staking.balanceOf(address(stakeOperator)), 0);
+        assertEq(erc721Staking.balanceOf(alice), 1);
+
+        assertEq(erc20Reward.balanceOf(alice), 10 ether);
         vm.stopPrank();
 
         vm.startPrank(bob);

@@ -14,16 +14,11 @@ contract ERC721EnumPlayer is ERC721Enumerable {
         _tokenId._value = 20;
     }
 
-    function mint() external {
-        _safeMint(msg.sender, _tokenId._value);
-        _tokenId.decrement();
-    }
-
-    function getTokenId() external returns (uint256) {
+    function getTokenId() external view returns (uint256) {
         return _tokenId._value;
     }
 
-    function getSpecialItems() external returns (uint256 total) {
+    function getSpecialItems() external view returns (uint256 total) {
         uint256 lastIndex = balanceOf(msg.sender);
         for (uint256 i = 0; i < lastIndex;) {
             unchecked {
@@ -35,6 +30,11 @@ contract ERC721EnumPlayer is ERC721Enumerable {
             }
         }
         return total;
+    }
+
+    function mint() external {
+        _safeMint(msg.sender, _tokenId._value);
+        _tokenId.decrement();
     }
 
     function _isPrime(uint256 x) internal pure returns (bool) {
