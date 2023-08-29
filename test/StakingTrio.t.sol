@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import {TestHelper} from "test/TestHelper.t.sol";
-import {MerkleTreeGenerator} from "test/utils/MerkleTreeGenerator.sol";
 
 contract StakingTrio is TestHelper {
     function testPublicMint() public {
@@ -69,5 +68,16 @@ contract StakingTrio is TestHelper {
 
         vm.startPrank(bob);
         vm.stopPrank();
+    }
+
+    function testOwnerWithdraw() public {
+        emit log_address(erc721Staking.owner());
+
+        vm.expectRevert("No funds available");
+        erc721Staking.withdraw();
+    }
+
+    function testRewardToken() public {
+        assertEq(address(stakeOperator.tokenReward()), address(erc20Reward));
     }
 }

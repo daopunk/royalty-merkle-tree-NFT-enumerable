@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
 import "lib/forge-std/src/console.sol";
@@ -8,7 +8,7 @@ import {ERC20Reward} from "src/staking/ERC20Reward.sol";
 import {ERC721Staking} from "src/staking/ERC721Staking.sol";
 import {StakeOperator} from "src/staking/StakeOperator.sol";
 import {ERC721EnumPlayer} from "src/ERC721EnumPlayer.sol";
-import {MerkleTreeGenerator} from "test/utils/MerkleTreeGenerator.sol";
+import {MerkleTreeGenerator} from "src/utils/MerkleTreeGenerator.sol";
 
 // forge t --gas-report
 

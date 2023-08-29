@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
-
-// no carrot ^
+pragma solidity 0.8.19;
 
 import {IERC721Receiver} from "@openzeppelin/token/ERC721/IERC721Receiver.sol";
 import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
@@ -13,7 +11,7 @@ interface IERC20Reward {
 
 contract StakeOperator is IERC721Receiver, Ownable2Step {
     IERC20Reward public tokenReward;
-    IERC721 public nftStaking;
+    IERC721 public immutable nftStaking;
 
     mapping(address owner => mapping(uint256 tokenId => uint256 claimed)) public dailyClaim;
     mapping(address owner => mapping(uint256 tokenId => uint256 locked)) public timeLock;

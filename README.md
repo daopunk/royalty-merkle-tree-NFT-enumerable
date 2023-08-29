@@ -24,4 +24,12 @@ Use cases:
 
 # NFT Metadata and Marketplaces
 
+NFT marketplaces, such as OpenSea, display NFT data on their UI with the help of the ERC721Metadata extension for ERC721. The ERC721Metadata interface includes the attributes name, symbol, and tokenURI, which creates a JSON Schema with properties that the marketplace can easily access and display. Furthermore, NFT marketplaces can access event logs of ERC721s to quickly identify the owner of a particular NFT or collection.
 
+## Slither Static Analysis
+
+False Positives:
+- identified missing inheritance from non-existent contract
+- flagged low-level calls
+- flagged lack of mixed-case lettering for internal function scoped variable
+- flagged the use of block.timestamp in comparison statement as dangerous
