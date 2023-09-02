@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - src/staking/src/staking/StakeOperator.sol</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">src/staking/src/staking</a> - StakeOperator.sol<span style="font-size: 80%;"> (source / <a href="StakeOperator.sol.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">91.7&nbsp;%</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">11</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2023-08-31 10:30:13</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">66.7&nbsp;%</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">2</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryLo">66.7&nbsp;%</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">4</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // SPDX-License-Identifier: UNLICENSED</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : pragma solidity 0.8.19;</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : </span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : import {IERC721Receiver} from &quot;@openzeppelin/token/ERC721/IERC721Receiver.sol&quot;;</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : import {IERC721} from &quot;@openzeppelin/token/ERC721/IERC721.sol&quot;;</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : import {Ownable2Step} from &quot;@openzeppelin/access/Ownable2Step.sol&quot;;</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : </span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : interface IERC20Reward {</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :     function mint(address account, uint256 amount) external;</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : }</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : contract StakeOperator is IERC721Receiver, Ownable2Step {</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :     IERC20Reward public tokenReward;</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :     IERC721 public immutable nftStaking;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :     mapping(address owner =&gt; mapping(uint256 tokenId =&gt; uint256 claimed)) public dailyClaim;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             :     mapping(address owner =&gt; mapping(uint256 tokenId =&gt; uint256 locked)) public timeLock;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             :     event RecieveNFT(address indexed operator, address indexed from, uint256 tokenId);</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :     constructor(address _nftStaking) {</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :         nftStaking = IERC721(_nftStaking);</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :     }</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC tlaBgUNC">           0 :     function setERC20Reward(address _tokenReward) external onlyOwner {</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :         tokenReward = IERC20Reward(_tokenReward);</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :     }</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaGNC tlaBgGNC">           2 :     function claimReward(uint256 tokenId) external {</span></span>
+<span id="L30"><span class="lineNum">      30</span>         [<span class="tlaUNC" title="Branch 0 was not executed"> # </span><span class="tlaGBC" title="Branch 1 was taken 2 times"> + </span>]:<span class="tlaGNC">           2 :         require(dailyClaim[msg.sender][tokenId] &gt; 0, &quot;StakeOperator: Already claimed&quot;);</span></span>
+<span id="L31"><span class="lineNum">      31</span>         [<span class="tlaGBC" title="Branch 0 was taken 1 time"> + </span><span class="tlaGBC" title="Branch 1 was taken 1 time"> + </span>]:<span class="tlaGNC">           2 :         require(timeLock[msg.sender][tokenId] &lt; block.timestamp, &quot;StakeOperator: Claim not eligible yet&quot;);</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : </span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaGNC">           1 :         dailyClaim[msg.sender][tokenId] = 0;</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaGNC">           1 :         timeLock[msg.sender][tokenId] = 0;</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaGNC">           1 :         tokenReward.mint(msg.sender, 10 ether);</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : </span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaGNC">           1 :         nftStaking.safeTransferFrom(address(this), msg.sender, tokenId);</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :     }</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : </span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaGNC">           1 :     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :         external</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :         returns (bytes4)</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :     {</span>
+<span id="L44"><span class="lineNum">      44</span>         [<span class="tlaUNC" title="Branch 0 was not executed"> # </span><span class="tlaGBC" title="Branch 1 was taken 1 time"> + </span>]:<span class="tlaGNC">           1 :         require(msg.sender == address(nftStaking), &quot;StakeOperator: Wrong staking asset&quot;);</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaGNC">           1 :         dailyClaim[from][tokenId] = 1;</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :<span class="tlaGNC">           1 :         timeLock[from][tokenId] = block.timestamp + 1 days;</span></span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaGNC">           1 :         emit RecieveNFT(operator, from, tokenId);</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaGNC">           1 :         return IERC721Receiver.onERC721Received.selector;</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :     }</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>
